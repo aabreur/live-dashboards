@@ -1,26 +1,47 @@
 require "sinatra"
 require "sinatra/sse"
-# require 'thin'
+require 'thin'
+require 'json'
 
-# class LiveApp < Sinatra::Base
+
+
+class LiveApp < Sinatra::Base
     include Sinatra::SSE
 
-    get "/" do
-        erb :index
-    end
+    DASHBOARDS = {
+    	'teste' => {
+    		'items' => [
+    			{'widget': 'example', 'id': 1}, 
+    			{'widget': 'example', 'id': 2}
+    		],
+    		'tick' => 1
+    	}
+    }
+
+    get "/dashboard/:dashboard" do
+    	erb :index
+	end
+
+	get "/config/:dashboard" do
+		content_type :json
+		DASHBOARDS[params[:dashboard]]['items'].to_json
+	end
 
     get '/data/:dashboard' do
-		puts "New sse conection for #{params[:dashboard]}"
-		type = params[:type]
+    	@dashboard_name = params[:dashboard]
+    	@dashboard = DASHBOARDS[@dashboard_name]
+
+		puts "New sse conection for #{@dashboard_name}"
 
 		sse_stream do |out|
-			EM.add_periodic_timer(10) do 
-		        data = { time: Time.now.to_i, strings: ["lalala", "AAAKKKALA"] }
-				puts "Sending message for #{params[:dashboard]}"
-				out.push event: "message", data: env.stats.to_json
+			out.push event: "message", data: "starting this crap for #{@dashboard_name}"
+			EM.add_periodic_timer(@dashboard['tick']) do 
+		        data = { time: Time.now.to_i, strings: ["lalala", @dashboard_name] }
+				puts "Sending message for #{@dashboard_name}"
+				out.push event: "message", data: data.to_json
 			end
 		end
 	end
-# end
+end
 
-# run LiveApp
+run LiveApp
