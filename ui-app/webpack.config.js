@@ -12,9 +12,6 @@ module.exports = {
                 exclude: /node_modules/,
                 query: {
                     presets: ['es2015', 'react']
-                },
-                options: {
-                    plugins: ["wildcard"]
                 }
             }
         ]
