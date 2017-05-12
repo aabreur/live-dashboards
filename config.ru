@@ -11,10 +11,10 @@ class LiveApp < Sinatra::Base
     DASHBOARDS = {
     	'teste' => {
     		'items' => [
-    			{'widget': 'example', 'id': 1}, 
-    			{'widget': 'example', 'id': 2}
+    			{'widget' => 'example', 'source' => 30, 'id' => 'uniq_1'}, 
+    			{'widget' => 'example', 'source' => 90, 'id' => 'uniq_2'}
     		],
-    		'tick' => 1
+    		'tick' => 3
     	}
     }
 
@@ -36,8 +36,10 @@ class LiveApp < Sinatra::Base
 		sse_stream do |out|
 			out.push event: "message", data: "starting this crap for #{@dashboard_name}"
 			EM.add_periodic_timer(@dashboard['tick']) do 
-		        data = { time: Time.now.to_i, strings: ["lalala", @dashboard_name] }
-				puts "Sending message for #{@dashboard_name}"
+				data = @dashboard['items'].map do |item|
+					{ 'id' => item['id'], 'wdata' => {'value' => rand(item['source'])} }
+				end
+				puts "Sending message for #{@dashboard_name} #{data}"
 				out.push event: "message", data: data.to_json
 			end
 		end

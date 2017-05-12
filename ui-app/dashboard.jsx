@@ -7,21 +7,36 @@ class Dashboard extends React.Component {
     constructor(props) {
         super(props);
 
+
         this.buildWidgets = (items) => {
-            return items.map(item => React.createElement(widgets[(item['widget'])], { data: "abc123", key: item['id'] }))
+            let index = {}
+            items.forEach(item => {
+                index[item['id']] = React.createElement(widgets[(item['widget'])], { key: item['id'], id: item['id'], data: {} })
+            })
+            return index
         }
+
+        const index = this.buildWidgets(props.items)
 
 
         this.state = {
             event: new EventSource('/data/' + props.dashboardName),
-            widgets: this.buildWidgets(props.items)
+            widgets: Object.values(index),
+            index: index
         };
 
         this.state.event.addEventListener('open', () => {
         }, false)
 
         this.state.event.addEventListener('message', e => {
-            this.setState({ data: e.data });
+            const data = JSON.parse(e.data)
+            for (var item of data) {
+                console.log("item", item)
+                const el = document.getElementById(item['id'])
+                console.log("el", el)
+                el.setProps({ data: item['wdata']})
+            }
+            this.setState({ data: data });
         }, false)
 
         this.state.event.addEventListener('error', () => {
@@ -30,14 +45,14 @@ class Dashboard extends React.Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        this.setState({ widgets: this.buildWidgets(nextProps.items) })
+        const index = this.buildWidgets(nextProps.items)
+        this.setState({ widgets: Object.values(index), index: index })
     }
 
     render() {
         return (
             <div>
                 <h1>{this.props.dashboardName}</h1>
-                <p className="lead">{this.state.data}</p>
                 <h1>Items:</h1>
                 <div>{this.state.widgets}</div>
             </div>

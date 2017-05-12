@@ -118,17 +118,8 @@
 	        value: function render() {
 	            return _react2.default.createElement(
 	                'div',
-	                { className: 'container' },
-	                _react2.default.createElement(
-	                    'div',
-	                    null,
-	                    _react2.default.createElement(
-	                        'h1',
-	                        null,
-	                        'Teste SSE'
-	                    ),
-	                    _react2.default.createElement(_dashboard2.default, { dashboardName: this.state.dashboardName, items: this.state.config })
-	                )
+	                { className: 'row' },
+	                _react2.default.createElement(_dashboard2.default, { dashboardName: this.state.dashboardName, items: this.state.config })
 	            );
 	        }
 	    }]);
@@ -21613,20 +21604,54 @@
 	        var _this = _possibleConstructorReturn(this, (Dashboard.__proto__ || Object.getPrototypeOf(Dashboard)).call(this, props));
 
 	        _this.buildWidgets = function (items) {
-	            return items.map(function (item) {
-	                return _react2.default.createElement(_index2.default[item['widget']], { data: "abc123", key: item['id'] });
+	            var index = {};
+	            items.forEach(function (item) {
+	                index[item['id']] = _react2.default.createElement(_index2.default[item['widget']], { key: item['id'], id: item['id'], data: {} });
 	            });
+	            return index;
 	        };
+
+	        var index = _this.buildWidgets(props.items);
 
 	        _this.state = {
 	            event: new EventSource('/data/' + props.dashboardName),
-	            widgets: _this.buildWidgets(props.items)
+	            widgets: Object.values(index),
+	            index: index
 	        };
 
 	        _this.state.event.addEventListener('open', function () {}, false);
 
 	        _this.state.event.addEventListener('message', function (e) {
-	            _this.setState({ data: e.data });
+	            var data = JSON.parse(e.data);
+	            var _iteratorNormalCompletion = true;
+	            var _didIteratorError = false;
+	            var _iteratorError = undefined;
+
+	            try {
+	                for (var _iterator = data[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	                    var item = _step.value;
+
+	                    console.log("item", item);
+	                    var el = document.getElementById(item['id']);
+	                    console.log("el", el);
+	                    el.setProps({ data: item['wdata'] });
+	                }
+	            } catch (err) {
+	                _didIteratorError = true;
+	                _iteratorError = err;
+	            } finally {
+	                try {
+	                    if (!_iteratorNormalCompletion && _iterator.return) {
+	                        _iterator.return();
+	                    }
+	                } finally {
+	                    if (_didIteratorError) {
+	                        throw _iteratorError;
+	                    }
+	                }
+	            }
+
+	            _this.setState({ data: data });
 	        }, false);
 
 	        _this.state.event.addEventListener('error', function () {}, false);
@@ -21637,7 +21662,8 @@
 	    _createClass(Dashboard, [{
 	        key: 'componentWillReceiveProps',
 	        value: function componentWillReceiveProps(nextProps) {
-	            this.setState({ widgets: this.buildWidgets(nextProps.items) });
+	            var index = this.buildWidgets(nextProps.items);
+	            this.setState({ widgets: Object.values(index), index: index });
 	        }
 	    }, {
 	        key: 'render',
@@ -21649,11 +21675,6 @@
 	                    'h1',
 	                    null,
 	                    this.props.dashboardName
-	                ),
-	                _react2.default.createElement(
-	                    'p',
-	                    { className: 'lead' },
-	                    this.state.data
 	                ),
 	                _react2.default.createElement(
 	                    'h1',

@@ -9,7 +9,7 @@ class App extends React.Component {
 
         const loadConfig = jsonConfig => {
             console.log("JSONCONFIG", jsonConfig)
-            const config = jsonConfig.json().then( data => this.setState({ config: data }) )
+            jsonConfig.json().then( data => this.setState({ config: data }) )
         }
 
         const errorLoadingConfig = e => {
@@ -31,11 +31,8 @@ class App extends React.Component {
     } 
     render() {
         return (
-            <div className="container">
-                <div>
-                    <h1>Teste SSE</h1>
-                    <Dashboard dashboardName={this.state.dashboardName} items={this.state.config} />
-                </div>
+            <div className="row">
+                <Dashboard dashboardName={this.state.dashboardName} items={this.state.config} />
             </div>
         )
     }
