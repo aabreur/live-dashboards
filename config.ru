@@ -7,6 +7,9 @@ require 'json'
 
 class LiveApp < Sinatra::Base
     include Sinatra::SSE
+	def get_random_data(items)
+		items.map { |item| { 'id' => item['id'], 'wdata' => {'value' => rand(item['source'])} } }
+	end
 
     DASHBOARDS = {
     	'teste' => {
@@ -34,11 +37,9 @@ class LiveApp < Sinatra::Base
 		puts "New sse conection for #{@dashboard_name}"
 
 		sse_stream do |out|
-			out.push event: "message", data: "starting this crap for #{@dashboard_name}"
+			out.push event: "message", data: get_random_data(@dashboard['items']).to_json
 			EM.add_periodic_timer(@dashboard['tick']) do 
-				data = @dashboard['items'].map do |item|
-					{ 'id' => item['id'], 'wdata' => {'value' => rand(item['source'])} }
-				end
+				data = get_random_data(@dashboard['items'])
 				puts "Sending message for #{@dashboard_name} #{data}"
 				out.push event: "message", data: data.to_json
 			end

@@ -2,27 +2,43 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import widgets from './widgets/index.js'
  
+const Widgets = props => {
+    console.log("props ------> ", props)
+    if (props.gotConfig) {
+        const components = props.data.map((item) => widgets[props.index[item.id]]({ key: item.id, data: item.wdata }) )
+        return (
+            <div>
+                {components}
+            </div>
+        )
+    } else {
+        return <div><em>Still getting the config, please wait</em></div>
+    }
+}
+
+
 class Dashboard extends React.Component {
 
     constructor(props) {
         super(props);
 
 
-        this.buildWidgets = (items) => {
-            let index = {}
-            items.forEach(item => {
-                index[item['id']] = React.createElement(widgets[(item['widget'])], { key: item['id'], id: item['id'], data: {} })
-            })
-            return index
-        }
+        // this.buildWidgets = (items) => {
+        //     let index = {}
+        //     items.forEach(item => {
+        //         index[item['id']] = React.createElement(widgets[(item['widget'])], { key: item['id'], data: this.state.data })
+        //     })
+        //     return index
+        // }
 
-        const index = this.buildWidgets(props.items)
-
+        // const index = this.buildWidgets(props.items)
 
         this.state = {
             event: new EventSource('/data/' + props.dashboardName),
-            widgets: Object.values(index),
-            index: index
+            widgets: [],
+            index: {},
+            data: [],
+            gotConfig: false
         };
 
         this.state.event.addEventListener('open', () => {
@@ -30,23 +46,24 @@ class Dashboard extends React.Component {
 
         this.state.event.addEventListener('message', e => {
             const data = JSON.parse(e.data)
-            for (var item of data) {
-                console.log("item", item)
-                const el = document.getElementById(item['id'])
-                console.log("el", el)
-                el.setProps({ data: item['wdata']})
+            if (data) {
+                this.setState({ data: data });
             }
-            this.setState({ data: data });
         }, false)
 
         this.state.event.addEventListener('error', () => {
         }, false)
 
+
     }
 
     componentWillReceiveProps(nextProps) {
-        const index = this.buildWidgets(nextProps.items)
-        this.setState({ widgets: Object.values(index), index: index })
+        // console.log("will call buildWidgets, this.state is:", this.state)
+        // const index = this.buildWidgets(nextProps.items)
+        // this.setState({ widgets: Object.values(index), index: index })
+        const index = {}
+        nextProps.items.forEach(item => { index[item['id']] = item['widget'] })
+        this.setState({ index: index, gotConfig: true })
     }
 
     render() {
@@ -54,7 +71,7 @@ class Dashboard extends React.Component {
             <div>
                 <h1>{this.props.dashboardName}</h1>
                 <h1>Items:</h1>
-                <div>{this.state.widgets}</div>
+                <Widgets data={this.state.data} index={this.state.index} gotConfig={this.state.gotConfig} />
             </div>
         )
     }

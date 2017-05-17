@@ -90,7 +90,7 @@
 
 	        var loadConfig = function loadConfig(jsonConfig) {
 	            console.log("JSONCONFIG", jsonConfig);
-	            var config = jsonConfig.json().then(function (data) {
+	            jsonConfig.json().then(function (data) {
 	                return _this.setState({ config: data });
 	            });
 	        };
@@ -21595,63 +21595,63 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+	var Widgets = function Widgets(props) {
+	    console.log("props ------> ", props);
+	    if (props.gotConfig) {
+	        var components = props.data.map(function (item) {
+	            return _index2.default[props.index[item.id]]({ key: item.id, data: item.wdata });
+	        });
+	        return _react2.default.createElement(
+	            'div',
+	            null,
+	            components
+	        );
+	    } else {
+	        return _react2.default.createElement(
+	            'div',
+	            null,
+	            _react2.default.createElement(
+	                'em',
+	                null,
+	                'Still getting the config, please wait'
+	            )
+	        );
+	    }
+	};
+
 	var Dashboard = function (_React$Component) {
 	    _inherits(Dashboard, _React$Component);
 
 	    function Dashboard(props) {
 	        _classCallCheck(this, Dashboard);
 
+	        // this.buildWidgets = (items) => {
+	        //     let index = {}
+	        //     items.forEach(item => {
+	        //         index[item['id']] = React.createElement(widgets[(item['widget'])], { key: item['id'], data: this.state.data })
+	        //     })
+	        //     return index
+	        // }
+
+	        // const index = this.buildWidgets(props.items)
+
 	        var _this = _possibleConstructorReturn(this, (Dashboard.__proto__ || Object.getPrototypeOf(Dashboard)).call(this, props));
-
-	        _this.buildWidgets = function (items) {
-	            var index = {};
-	            items.forEach(function (item) {
-	                index[item['id']] = _react2.default.createElement(_index2.default[item['widget']], { key: item['id'], id: item['id'], data: {} });
-	            });
-	            return index;
-	        };
-
-	        var index = _this.buildWidgets(props.items);
 
 	        _this.state = {
 	            event: new EventSource('/data/' + props.dashboardName),
-	            widgets: Object.values(index),
-	            index: index
+	            widgets: [],
+	            index: {},
+	            data: [],
+	            gotConfig: false
 	        };
 
 	        _this.state.event.addEventListener('open', function () {}, false);
 
 	        _this.state.event.addEventListener('message', function (e) {
 	            var data = JSON.parse(e.data);
-	            var _iteratorNormalCompletion = true;
-	            var _didIteratorError = false;
-	            var _iteratorError = undefined;
-
-	            try {
-	                for (var _iterator = data[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-	                    var item = _step.value;
-
-	                    console.log("item", item);
-	                    var el = document.getElementById(item['id']);
-	                    console.log("el", el);
-	                    el.setProps({ data: item['wdata'] });
-	                }
-	            } catch (err) {
-	                _didIteratorError = true;
-	                _iteratorError = err;
-	            } finally {
-	                try {
-	                    if (!_iteratorNormalCompletion && _iterator.return) {
-	                        _iterator.return();
-	                    }
-	                } finally {
-	                    if (_didIteratorError) {
-	                        throw _iteratorError;
-	                    }
-	                }
+	            if (data) {
+	                _this.setState({ data: data });
 	            }
-
-	            _this.setState({ data: data });
 	        }, false);
 
 	        _this.state.event.addEventListener('error', function () {}, false);
@@ -21662,8 +21662,14 @@
 	    _createClass(Dashboard, [{
 	        key: 'componentWillReceiveProps',
 	        value: function componentWillReceiveProps(nextProps) {
-	            var index = this.buildWidgets(nextProps.items);
-	            this.setState({ widgets: Object.values(index), index: index });
+	            // console.log("will call buildWidgets, this.state is:", this.state)
+	            // const index = this.buildWidgets(nextProps.items)
+	            // this.setState({ widgets: Object.values(index), index: index })
+	            var index = {};
+	            nextProps.items.forEach(function (item) {
+	                index[item['id']] = item['widget'];
+	            });
+	            this.setState({ index: index, gotConfig: true });
 	        }
 	    }, {
 	        key: 'render',
@@ -21681,11 +21687,7 @@
 	                    null,
 	                    'Items:'
 	                ),
-	                _react2.default.createElement(
-	                    'div',
-	                    null,
-	                    this.state.widgets
-	                )
+	                _react2.default.createElement(Widgets, { data: this.state.data, index: this.state.index, gotConfig: this.state.gotConfig })
 	            );
 	        }
 	    }]);
@@ -21751,7 +21753,10 @@
 	    function Example(props) {
 	        _classCallCheck(this, Example);
 
-	        return _possibleConstructorReturn(this, (Example.__proto__ || Object.getPrototypeOf(Example)).call(this, props));
+	        var _this = _possibleConstructorReturn(this, (Example.__proto__ || Object.getPrototypeOf(Example)).call(this, props));
+
+	        console.log("creating an example with props", props);
+	        return _this;
 	    }
 
 	    _createClass(Example, [{
@@ -21760,7 +21765,7 @@
 	            return _react2.default.createElement(
 	                'div',
 	                null,
-	                this.props.data
+	                this.props.data.value
 	            );
 	        }
 	    }]);
@@ -21768,7 +21773,11 @@
 	    return Example;
 	}(_react2.default.Component);
 
-	exports.default = Example;
+	var example = function example(props) {
+	    return _react2.default.createElement(Example, props);
+	};
+
+	exports.default = example;
 
 /***/ }
 /******/ ]);
