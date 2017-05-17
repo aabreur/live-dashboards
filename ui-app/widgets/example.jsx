@@ -5,11 +5,11 @@ class Example extends React.Component {
 
     constructor(props) {
         super(props);
-        console.log("creating an example with props", props)
     }
 
     render() {
-        return <div>{this.props.data.value}</div>
+        const alertClass = (this.props.data.value < 25) ? "alert-danger" : "alert-success"
+        return <div className={"col-lg-6 alert " + alertClass}>{this.props.data.value}</div>
     }
 }
 

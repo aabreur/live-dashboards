@@ -89,7 +89,6 @@
 	        var _this = _possibleConstructorReturn(this, (App.__proto__ || Object.getPrototypeOf(App)).call(this, props));
 
 	        var loadConfig = function loadConfig(jsonConfig) {
-	            console.log("JSONCONFIG", jsonConfig);
 	            jsonConfig.json().then(function (data) {
 	                return _this.setState({ config: data });
 	            });
@@ -99,15 +98,12 @@
 	            console.log("There was an error reading this dashboard config", e);
 	        };
 
-	        var regex = /^\/dashboard\/(\w*)$/;
-	        var path = window.location.pathname;
-	        var dashboardName = regex.exec(path)[1];
+	        var dashboardName = window.livedash.dashboardName;
 
 	        _this.state = {
 	            dashboardName: dashboardName,
 	            config: []
 	        };
-
 	        var requestConfig = fetch("/config/" + dashboardName).then(loadConfig, errorLoadingConfig);
 
 	        return _this;
@@ -21596,7 +21592,6 @@
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 	var Widgets = function Widgets(props) {
-	    console.log("props ------> ", props);
 	    if (props.gotConfig) {
 	        var components = props.data.map(function (item) {
 	            return _index2.default[props.index[item.id]]({ key: item.id, data: item.wdata });
@@ -21613,7 +21608,7 @@
 	            _react2.default.createElement(
 	                'em',
 	                null,
-	                'Still getting the config, please wait'
+	                'Still fetching the config, please wait'
 	            )
 	        );
 	    }
@@ -21625,21 +21620,10 @@
 	    function Dashboard(props) {
 	        _classCallCheck(this, Dashboard);
 
-	        // this.buildWidgets = (items) => {
-	        //     let index = {}
-	        //     items.forEach(item => {
-	        //         index[item['id']] = React.createElement(widgets[(item['widget'])], { key: item['id'], data: this.state.data })
-	        //     })
-	        //     return index
-	        // }
-
-	        // const index = this.buildWidgets(props.items)
-
 	        var _this = _possibleConstructorReturn(this, (Dashboard.__proto__ || Object.getPrototypeOf(Dashboard)).call(this, props));
 
 	        _this.state = {
 	            event: new EventSource('/data/' + props.dashboardName),
-	            widgets: [],
 	            index: {},
 	            data: [],
 	            gotConfig: false
@@ -21649,22 +21633,18 @@
 
 	        _this.state.event.addEventListener('message', function (e) {
 	            var data = JSON.parse(e.data);
-	            if (data) {
-	                _this.setState({ data: data });
-	            }
+	            _this.setState({ data: data });
 	        }, false);
 
-	        _this.state.event.addEventListener('error', function () {}, false);
-
+	        _this.state.event.addEventListener('error', function (e) {
+	            console.log("There was an error with event listener: ", e);
+	        }, false);
 	        return _this;
 	    }
 
 	    _createClass(Dashboard, [{
 	        key: 'componentWillReceiveProps',
 	        value: function componentWillReceiveProps(nextProps) {
-	            // console.log("will call buildWidgets, this.state is:", this.state)
-	            // const index = this.buildWidgets(nextProps.items)
-	            // this.setState({ widgets: Object.values(index), index: index })
 	            var index = {};
 	            nextProps.items.forEach(function (item) {
 	                index[item['id']] = item['widget'];
@@ -21674,21 +21654,7 @@
 	    }, {
 	        key: 'render',
 	        value: function render() {
-	            return _react2.default.createElement(
-	                'div',
-	                null,
-	                _react2.default.createElement(
-	                    'h1',
-	                    null,
-	                    this.props.dashboardName
-	                ),
-	                _react2.default.createElement(
-	                    'h1',
-	                    null,
-	                    'Items:'
-	                ),
-	                _react2.default.createElement(Widgets, { data: this.state.data, index: this.state.index, gotConfig: this.state.gotConfig })
-	            );
+	            return _react2.default.createElement(Widgets, { data: this.state.data, index: this.state.index, gotConfig: this.state.gotConfig });
 	        }
 	    }]);
 
@@ -21753,18 +21719,16 @@
 	    function Example(props) {
 	        _classCallCheck(this, Example);
 
-	        var _this = _possibleConstructorReturn(this, (Example.__proto__ || Object.getPrototypeOf(Example)).call(this, props));
-
-	        console.log("creating an example with props", props);
-	        return _this;
+	        return _possibleConstructorReturn(this, (Example.__proto__ || Object.getPrototypeOf(Example)).call(this, props));
 	    }
 
 	    _createClass(Example, [{
 	        key: 'render',
 	        value: function render() {
+	            var alertClass = this.props.data.value < 25 ? "alert-danger" : "alert-success";
 	            return _react2.default.createElement(
 	                'div',
-	                null,
+	                { className: "col-lg-6 alert " + alertClass },
 	                this.props.data.value
 	            );
 	        }

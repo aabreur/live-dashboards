@@ -22,6 +22,7 @@ class LiveApp < Sinatra::Base
     }
 
     get "/dashboard/:dashboard" do
+    	@dashboard = params[:dashboard]
     	erb :index
 	end
 
