@@ -9,7 +9,7 @@ class Example extends React.Component {
 
     render() {
         const alertClass = (this.props.data.value < 25) ? "alert-danger" : "alert-success"
-        return <div className={"col-lg-6 alert " + alertClass}>{this.props.data.value}</div>
+        return <div className={"col-lg-6 transition alert " + alertClass}>{this.props.data.value}</div>
     }
 }
 

@@ -15,7 +15,7 @@ class LiveApp < Sinatra::Base
     	'teste' => {
     		'items' => [
     			{'widget' => 'example', 'source' => 30, 'id' => 'uniq_1'}, 
-    			{'widget' => 'example', 'source' => 90, 'id' => 'uniq_2'}
+    			{'widget' => 'gauge', 'source' => 90, 'id' => 'uniq_2'}
     		],
     		'tick' => 3
     	}

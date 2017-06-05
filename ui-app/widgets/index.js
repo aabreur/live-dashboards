@@ -1,7 +1,10 @@
 import Example from './example.jsx'
+import Gauge from './gauge.jsx'
 
 const widgets = {
-	'example' : Example
+	'example' : Example,
+	'gauge': Gauge
+
 }
 
 
